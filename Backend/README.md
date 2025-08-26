@@ -211,3 +211,69 @@ This modular approach ensures separation of concerns:
 ---
 
 For more details, refer to the individual files
+
+### Get User Profile Endpoint
+
+**URL:** `/api/users/profile`  
+**Method:** `GET`  
+**Content-Type:** `application/json`
+
+**Description:**  
+Retrieves the profile details of the authenticated user. This endpoint requires a valid JWT token. The token can be provided via a cookie (`token`) or in the request header (`Authorization: Bearer JWT_TOKEN`).
+
+**Authentication:**  
+Requires a valid JWT token verified by middleware (`authMiddleware.authUser`).
+
+**Example Request:**
+
+```http
+GET /api/users/profile HTTP/1.1
+Host: your-domain.com
+Authorization: Bearer JWT_TOKEN_HERE
+
+Sucess Response
+Status: 200 OK
+{
+  "user": {
+    "_id": "USER_ID_HERE",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com"
+    // additional non-sensitive fields as applicable
+  }
+}
+Error Response:
+
+If the user is not found or the token is invalid/expired:
+Status: 404 Not Found
+{
+  "message": "User not found"
+}
+Logout User Endpoint
+URL: /api/users/logout
+Method: GET
+Content-Type: application/json
+
+Description:
+Logs out the authenticated user by clearing the authentication cookie (token) and blacklisting the provided token. This prevents the token from being used again for subsequent API requests.
+Description:
+Logs out the authenticated user by clearing the authentication cookie (token) and blacklisting the provided token. This prevents the token from being used again for subsequent API requests.
+
+Authentication:
+Requires a valid JWT token verified by middleware (authMiddleware.authUser).
+
+Mechanism:
+
+The token is extracted either from the cookies or the Authorization header.
+The token is added to a blacklist (handled by blacklistTokenModel) to prevent reuse.
+The authentication cookie is cleared.
+Example Request:
+GET /api/users/logout HTTP/1.1
+Host: your-domain.com
+Authorization: Bearer JWT_TOKEN_HERE
+Error Handling:
+
+In case of token or logout errors, an appropriate error message and status code will be returned.
+```
