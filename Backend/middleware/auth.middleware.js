@@ -1,6 +1,7 @@
 const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
-
+const blacklistTokenModel = require("../models/blacklistToken.model");
+const CaptainModel = require("../models/captain.model");
 module.exports.authUser = async (req, res, next) => {
   try {
     // Safely check for token
@@ -13,7 +14,7 @@ module.exports.authUser = async (req, res, next) => {
         .json({ message: "Access denied. No token provided." });
     }
 
-    const isBlacklisted = await userModel.findOne({ token: token });
+    const isBlacklisted = await blacklistTokenModel.findOne({ token: token });
     if (isBlacklisted) {
       return res
         .status(401)
@@ -29,6 +30,33 @@ module.exports.authUser = async (req, res, next) => {
     }
 
     req.user = user; // ✅ Assign user properly
+    return next();
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ message: "Unauthorized access. Invalid token." });
+  }
+};
+
+module.exports.authCaptain = async (req, res, next) => {
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access denied. No token provided." });
+  }
+
+  const isBlacklisted = await blacklistTokenModel.findOne({ token: token });
+  if (isBlacklisted) {
+    return res
+      .status(401)
+      .json({ message: "Token is blacklisted. Please login again." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const captain = await CaptainModel.findById(decoded._id);
+    req.captain = captain; // ✅ Assign captain properly
     return next();
   } catch (err) {
     return res

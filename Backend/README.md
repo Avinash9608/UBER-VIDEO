@@ -404,3 +404,153 @@ Contains the business logic for creating a new captain. It validates that all fi
 
 This endpoint ensures secure registration of captains with complete vehicle details, making use of layered validation and business logic.
 ```
+
+### Captain Login Endpoint
+
+**URL:** `/api/captains/login`  
+**Method:** `POST`  
+**Content-Type:** `application/json`
+
+**Description:**  
+Authenticates a captain using their email and password. If the credentials are valid, a JWT token is generated and returned along with the captain’s details (excluding sensitive information).
+
+**Validation Rules:**
+
+- **email:**
+
+  - Type: String
+  - Required: Yes
+  - Format: Must be a valid email address
+
+- **password:**
+  - Type: String
+  - Required: Yes
+  - Minimum Length: 6 characters
+
+**Example Request:**
+
+```````json
+POST /api/captains/login
+Content-Type: application/json
+
+{
+  "email": "jane.doe@example.com",
+  "password": "strongPassword123"
+}
+Success Response:
+
+If authentication is successful, the endpoint returns a status code of 200 and a JSON response containing the JWT token and captain details.
+
+Status: 200 OK
+{
+  "token": "JWT_TOKEN_HERE",
+  "captain": {
+    "_id": "CAPTAIN_ID_HERE",
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Doe"
+    },
+    "email": "jane.doe@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "XYZ123",
+      "capacity": 4,
+      "vehicleType": "Sedan"
+    }
+  }
+}
+Error Responses:
+
+Invalid Credentials:
+If the email or password is incorrect:
+
+Status: 401 Unauthorized
+{
+  "message": "Invalid email or password"
+}
+Validation Errors:
+If the request data fails validation:
+Status: 400 Bad Request
+{
+  "errors": [
+    {
+      "msg": "Invalid email format",
+      "param": "email",
+      "location": "body"
+    },
+
+
+{
+      "msg": "Password must be at least 6 characters long",
+      "param": "password",
+      "location": "body"
+    }
+  ]
+}
+Get Captain Profile Endpoint
+URL: /api/captains/profile
+Method: GET
+Content-Type: application/json
+
+Description:
+Retrieves the profile details of the authenticated captain. This endpoint requires a valid JWT token, which must be provided either in the cookie (token) or in the request header as Authorization: Bearer <<vscode_annotation details='%5B%7B%22title%22%3A%22hardcoded-credentials%22%2C%22description%22%3A%22Embedding%20credentials%20in%20source%20code%20risks%20unauthorized%20access%22%7D%5D'>token</vscode_annotation>>.
+
+Example Request:
+GET /api/captains/profile HTTP/1.1
+Host: your-domain.com
+Authorization: Bearer JWT_TOKEN_HERE
+Success Response:
+
+A successful request returns the captain’s profile information:
+Status: 200 OK
+{
+  "captain": {
+    "_id": "CAPTAIN_ID_HERE",
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Doe"
+    },
+    "email": "jane.doe@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "XYZ123",
+      "capacity": 4,
+      "vehicleType": "Sedan"
+    }
+  }
+}
+Error Response:
+
+If the token is invalid or the captain is not found, an appropriate error message and status code (e.g., 404 or 401) is returned.
+
+Logout Captain Endpoint
+URL: /api/captains/logout
+Method: GET
+Content-Type: application/json
+
+Description:
+Logs out the authenticated captain by clearing the authentication cookie (token) and blacklisting the provided JWT token to prevent its further use.
+
+Mechanism:
+
+The token is extracted from the request, either from cookies or the Authorization
+header.
+The token is stored in a blacklist (using blacklistTokenModel) to invalidate further requests.
+The authentication cookie is then cleared.
+Example Request:
+
+GET /api/captains/logout HTTP/1.1
+Host: your-domain.com
+Authorization: Bearer JWT_TOKEN_HERE
+Success Response:
+
+A successful logout returns a status code of 200 along with a confirmation message.
+Status: 200 OK
+{
+  "message": "Logged out successfully"
+}
+
+Error Handling:
+
+In case of any issues during token extraction or processing, an error response with an appropriate HTTP status code will be returned. ``````
+```````
