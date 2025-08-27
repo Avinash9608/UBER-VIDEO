@@ -277,3 +277,130 @@ Error Handling:
 
 In case of token or logout errors, an appropriate error message and status code will be returned.
 ```
+
+### Register Captain Endpoint
+
+**URL:** `/api/captains/register`  
+**Method:** `POST`  
+**Content-Type:** `application/json`
+
+**Description:**  
+Registers a new captain in the system. The endpoint validates the input data, hashes the provided password, creates a new captain record in the database including vehicle details, and returns a JWT token for authentication.
+
+**Validation Rules:**
+
+- **fullname.firstname:**
+  - Type: String
+  - Required: Yes
+  - Minimum Length: 3 characters
+- **fullname.lastname:**
+  - Type: String
+  - Required: Yes
+  - Minimum Length: 3 characters
+- **email:**
+  - Type: String
+  - Required: Yes
+  - Format: Must be a valid email address
+- **password:**
+  - Type: String
+  - Required: Yes
+  - Minimum Length: 6 characters
+- **vehicle.color:**
+  - Type: String
+  - Required: Yes
+- **vehicle.plate:**
+  - Type: String
+  - Required: Yes
+- **vehicle.capacity:**
+  - Type: Number
+  - Required: Yes
+- **vehicle.vehicleType:**
+  - Type: String
+  - Required: Yes
+
+**Example Request:**
+
+```json
+POST /api/captains/register
+Content-Type: application/json
+
+{
+  "fullname": {
+    "firstname": "Jane",
+    "lastname": "Doe"
+  },
+  "email": "jane.doe@example.com",
+  "password": "strongPassword123",
+  "vehicle": {
+    "color": "Red",
+    "plate": "XYZ123",
+    "capacity": 4,
+    "vehicleType": "Sedan"
+  }
+}
+
+Success Response:
+
+On successful registration, the server responds with a status code of 201 and returns a message along with a JWT token.
+
+Status: 201 Created
+{
+  "message": "Captain registered successfully",
+  "token": "JWT_TOKEN_HERE"
+}
+
+Error Responses
+If the input data fails validation, the response will include errors from express-validator.
+Status: 400 Bad Request
+{
+  "errors": [
+    {
+      "msg": "First name must be at least 3 characters long",
+      "param": "fullname.firstname",
+      "location": "body"
+    },
+    {
+      "msg": "Invalid email format",
+      "param": "email",
+      "location": "body"
+    }
+  ]
+}
+Captain Already Exists:
+If a captain with the provided email already exists:
+
+Status: 400 Bad Request
+{
+  "message": "Captain already exists"
+}
+Flow Overview:
+
+Input Validation:
+The endpoint uses express-validator to ensure that all fields in the request body adhere to the specified formats and constraints.
+
+Duplicate Check:
+The controller checks if a captain already exists using the provided email. If so, it returns a 400 error.
+
+Password Hashing:
+The plain text password is hashed using CaptainModel.hashPassword to ensure secure storage.
+
+Captain Creation:
+
+The service layer (captainService.createCaptain) verifies that all required fields are present.
+It creates a new record with the captain's profile and embedded vehicle details.
+Token Generation:
+Once created, the captain document invokes the instance method generateAuthToken to generate a JWT for further authentication.
+
+Response:
+The endpoint responds with a 201 Created status, returning a success message and the generated token.
+
+Files Involved:
+
+Controller (captain.controller.js):
+Handles validation, duplicate checking, password hashing, invoking the service to create the captain, and generating the JWT token.
+
+Service (captain.service.js):
+Contains the business logic for creating a new captain. It validates that all fields (captain details and vehicle details) are provided, and then creates the record in the database.
+
+This endpoint ensures secure registration of captains with complete vehicle details, making use of layered validation and business logic.
+```
